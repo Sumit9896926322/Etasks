@@ -1,8 +1,16 @@
 import {useEffect, useState} from "react";
+import EditModal from "./EditModal";
 
 const Todos = ()=>{
     const [todos,setTodos] = useState([]);
     const [todoText,setTodoText] = useState('');
+    const [isModalVisible,setIsModalVisible] = useState(false);
+
+    useEffect(()=>{
+        const savedTodos = localStorage.getItem("todos");
+        if(savedTodos)
+            setTodos(JSON.parse(savedTodos));
+    },[])
 
     useEffect(() => {
         localStorage.setItem("todos",JSON.stringify(todos));
@@ -12,9 +20,7 @@ const Todos = ()=>{
         if(todoText)
             setTodos(prevTodos=>[...prevTodos,todoText]);
     }
-    const editTodo = (index)=>{
 
-    }
     const deleteTodo = (index)=>{
         const newTodos = todos.filter((t,i)=> i!=index);
         setTodos(newTodos);
@@ -24,9 +30,15 @@ const Todos = ()=>{
             addTodo(todoText);
         }
     }
+    const editTodo = (id,newTodo)=>{
+        console.log(newTodo);
+        const updatedTodos = todos;
+        updatedTodos[id] = newTodo;
+        setTodos(updatedTodos);
+    }
     return(
-        <div>
-            <div className="input-group my-5 w-50 mx-auto">
+        <div className="w-50 mx-auto my-5 flex-grow-1">
+            <div className="input-group mb-5">
                 <input type="text" className="form-control input-group-text" placeholder="Write your todos here"
                        onChange={(e)=>setTodoText(e.target.value)}
                        onKeyDown={(e)=>handleKeyDown(e)}
@@ -34,14 +46,22 @@ const Todos = ()=>{
                     <span className="input-group-text btn btn-info" id="basic-addon2" onClick={()=>addTodo(todoText)}>Add Todos</span>
             </div>
 
-            <ul>
+            <ul className='list-group'>
                 {
                     todos.map((todo,index)=>
-                        <li key={index}>
-                             <div>{todo}</div>
-                            <button onClick={()=> editTodo(index)}>Edit</button>
-                            <button onClick={()=>deleteTodo(index)}>Delete</button>
+                        <li key={index} className="d-flex justify-content-between align-items-center  list-group-item list-group-item-info my-2 ">
+                            <div>{todo}</div>
+                            <div>
+                                {
+                                    isModalVisible? <EditModal todoId={index} setModalVisible={setIsModalVisible} todoText={todo} editTodo = {editTodo}/>:null
+                                }
+                                <button className="btn btn-outline-secondary mx-5" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={()=> setIsModalVisible(true)}>Edit</button>
+                                <button className="btn btn-outline-danger" onClick={()=>deleteTodo(index)}>Delete</button>
+                            </div>
+
                         </li>
+
+
                     )
                 }
             </ul>
